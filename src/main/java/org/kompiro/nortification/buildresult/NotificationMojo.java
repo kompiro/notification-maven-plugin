@@ -20,6 +20,7 @@ import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.maven.execution.AbstractExecutionListener;
+import org.apache.maven.execution.BuildFailure;
 import org.apache.maven.execution.BuildSuccess;
 import org.apache.maven.execution.BuildSummary;
 import org.apache.maven.execution.ExecutionEvent;
@@ -27,6 +28,7 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.kompiro.nortification.ui.NotificationType;
 import org.kompiro.nortification.ui.NotificationWindow;
 
 /**
@@ -56,16 +58,22 @@ public class NotificationMojo extends AbstractMojo {
 						BuildSummary buildSummary = session.getResult()
 								.getBuildSummary(project);
 						if (buildSummary instanceof BuildSuccess) {
-							String title = "Maven Build Success!";
+							String title = "Build Success!";
 							String message = String.format(
-									"'%s' is builded", project.getName());
-							showNotificationUI(title, message);
+									"Time : '%s's", buildSummary.getTime());
+							showNotificationUI(title, message,NotificationType.SUCCESS);
+						} else if (buildSummary instanceof BuildFailure) {
+							String title = "Build Failure!";
+							String message = String.format(
+									"Time : '%s's", buildSummary.getTime());
+							showNotificationUI(title, message,NotificationType.ERROR);
+							
 						}
 					}
 				});
 	}
 
-	private void showNotificationUI(final String title, final String message) {
+	private void showNotificationUI(final String title, final String message,final NotificationType type) {
 		try {
 			EventQueue.invokeAndWait(new Runnable() {
 				public void run() {
@@ -74,6 +82,7 @@ public class NotificationMojo extends AbstractMojo {
 					window.setTitle(title);
 					window.setMessage(message);
 					window.setDuration(2000);
+					window.setType(type);
 					window.pack();
 					window.notifyUI();
 				}
