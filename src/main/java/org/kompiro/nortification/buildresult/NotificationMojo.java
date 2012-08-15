@@ -16,9 +16,7 @@ package org.kompiro.nortification.buildresult;
  * limitations under the License.
  */
 
-import java.awt.EventQueue;
 import java.lang.reflect.InvocationHandler;
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
@@ -31,8 +29,10 @@ import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
+import org.kompiro.nortification.buildresult.strategy.GrowlNotificationStrategy;
+import org.kompiro.nortification.buildresult.strategy.NotificationStrategy;
+import org.kompiro.nortification.buildresult.strategy.SwingNotificationStrategy;
 import org.kompiro.nortification.ui.NotificationType;
-import org.kompiro.nortification.ui.NotificationWindow;
 
 /**
  * Notify build result
@@ -47,6 +47,7 @@ public class NotificationMojo extends AbstractMojo {
 
 	private final class NotifySessionEndedHandler implements
 			InvocationHandler {
+		private static final String METHOD_NAME_OF_SESSION_ENDED = "sessionEnded";
 		private final ExecutionListener defaultExecutionListener;
 
 		private NotifySessionEndedHandler(
@@ -76,7 +77,7 @@ public class NotificationMojo extends AbstractMojo {
 								failure.getCause().getLocalizedMessage());
 					} else {
 						message = String.format(
-								"Total Time : %ss\n", buildSummary.getTime());
+								"Total Time : %ss", buildSummary.getTime());
 					}
 					showNotificationUI(title, message,NotificationType.ERROR);
 				}
@@ -85,7 +86,7 @@ public class NotificationMojo extends AbstractMojo {
 		}
 
 		private boolean isExecutedSessionEnded(Method method) {
-			return method.getName().equals("sessionEnded") ;
+			return method.getName().equals(METHOD_NAME_OF_SESSION_ENDED) ;
 		}
 	}
 
@@ -104,10 +105,23 @@ public class NotificationMojo extends AbstractMojo {
      * @parameter expression="${maven.notification.duration}" default-value=2000
      */
     private Integer duration;
+    
+    /**
+     * Notification strategy<br>
+     * strategies:
+     * <ul>
+     * 	<li>swing : simple notification window
+     * 	<li>growl : use growlnotify (growl command line) notification
+     * </ul>
+     *
+     * @parameter expression="${maven.notification.strategy}" default-value=swing
+     */
+    private String strategy;
+    
 
 	public void execute() throws MojoExecutionException {
 		MavenExecutionRequest request = session.getRequest();
-		final ExecutionListener defaultExecutionListener = request.getExecutionListener();
+		ExecutionListener defaultExecutionListener = request.getExecutionListener();
 		Object instance = Proxy.newProxyInstance(
 				this.getClass().getClassLoader(), 
 				new Class[]{ExecutionListener.class}, 
@@ -116,29 +130,12 @@ public class NotificationMojo extends AbstractMojo {
 	}
 
 	private void showNotificationUI(final String title, final String message,final NotificationType type) {
-		try {
-			EventQueue.invokeAndWait(new Runnable() {
-				public void run() {
-					final NotificationWindow window = new NotificationWindow();
-					window.setLocation(0, -10000); // hide initialization window
-					window.setTitle(title);
-					window.setMessage(message);
-					window.setDuration(duration);
-					window.setType(type);
-					window.pack();
-					window.notifyUI();
-				}
-			});
-		} catch (InterruptedException e) {
-			getLog().error(e);
-		} catch (InvocationTargetException e) {
-			getLog().error(e);
+		NotificationStrategy notifyStrategy;
+		if(strategy.equals("growl")){
+			notifyStrategy = new GrowlNotificationStrategy(getLog(),title,message);
+		} else {
+			notifyStrategy = new SwingNotificationStrategy(getLog(),duration,title,message,type);			
 		}
-		getLog().info(String.valueOf(duration));
-		try {
-			Thread.sleep(duration);
-		} catch (InterruptedException e) {
-			getLog().error(e);
-		}
+		notifyStrategy.show();
 	}
 }
