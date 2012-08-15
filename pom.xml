@@ -126,4 +126,10 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+	<scm>
+		<url>scm:git:git@github.com:kompiro/notification-maven-plugin.git</url>
+		<connection>scm:git:git:git@github.com:kompiro/notification-maven-plugin.git</connection>
+		<developerConnection>scm:git:git@github.com:kompiro/notification-maven-plugin.git</developerConnection>
+		<tag>HEAD</tag>
+	</scm>
 </project>
