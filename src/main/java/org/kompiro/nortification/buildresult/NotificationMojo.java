@@ -28,9 +28,6 @@ import org.apache.maven.execution.MavenExecutionRequest;
 import org.apache.maven.execution.MavenSession;
 import org.apache.maven.plugin.AbstractMojo;
 import org.apache.maven.plugin.MojoExecutionException;
-import org.apache.maven.plugins.annotations.LifecyclePhase;
-import org.apache.maven.plugins.annotations.Mojo;
-import org.apache.maven.plugins.annotations.Parameter;
 import org.apache.maven.project.MavenProject;
 import org.kompiro.nortification.buildresult.strategy.GrowlNotificationStrategy;
 import org.kompiro.nortification.buildresult.strategy.NotificationStrategy;
@@ -38,11 +35,14 @@ import org.kompiro.nortification.buildresult.strategy.SwingNotificationStrategy;
 import org.kompiro.nortification.ui.NotificationType;
 
 /**
- * Notify build result to user
+ * Notify build result
  * 
  * @author <a href="kompiro@gmail.com">Hiroki Kondo</a>
+ * @goal notify
+ * @phase initialize
+ * @requiresProject
+ * @description notify build result to user.
  */
-@Mojo(name="notify", defaultPhase=LifecyclePhase.INITIALIZE, requiresProject=true)
 public class NotificationMojo extends AbstractMojo {
 
 	private final class NotifySessionEndedHandler implements
@@ -92,14 +92,18 @@ public class NotificationMojo extends AbstractMojo {
 
 	/**
 	 * The Maven Session Object
+	 * 
+	 * @parameter expression="${session}"
+	 * @required
+	 * @readonly
 	 */
-	@Parameter(property="session",required=true,readonly=true)
 	protected MavenSession session;
 	
     /**
      * Notification duration
+     *
+     * @parameter expression="${maven.notification.duration}" default-value=2000
      */
-	@Parameter(property="maven.notification.duration",defaultValue="2000")
     private Integer duration;
     
     /**
@@ -110,8 +114,8 @@ public class NotificationMojo extends AbstractMojo {
      * 	<li>growl : use growlnotify (growl command line) notification
      * </ul>
      *
+     * @parameter expression="${maven.notification.strategy}" default-value=swing
      */
-	@Parameter(property="maven.notification.strategy",defaultValue="swing")
     private String strategy;
     
 
