@@ -4,7 +4,6 @@ import java.awt.EventQueue;
 import java.lang.reflect.InvocationTargetException;
 
 import org.apache.maven.plugin.logging.Log;
-import org.kompiro.nortification.ui.NotificationType;
 import org.kompiro.nortification.ui.NotificationWindow;
 
 public class SwingNotificationStrategy implements NotificationStrategy {
@@ -33,7 +32,7 @@ public class SwingNotificationStrategy implements NotificationStrategy {
 					window.setTitle(title);
 					window.setMessage(message);
 					window.setDuration(duration);
-					window.setType(type);
+					window.setColor(type.getColor());
 					window.pack();
 					window.notifyUI();
 				}

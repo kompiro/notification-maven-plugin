@@ -31,8 +31,8 @@ import org.apache.maven.plugin.MojoExecutionException;
 import org.apache.maven.project.MavenProject;
 import org.kompiro.nortification.buildresult.strategy.GrowlNotificationStrategy;
 import org.kompiro.nortification.buildresult.strategy.NotificationStrategy;
+import org.kompiro.nortification.buildresult.strategy.NotificationType;
 import org.kompiro.nortification.buildresult.strategy.SwingNotificationStrategy;
-import org.kompiro.nortification.ui.NotificationType;
 
 /**
  * Notify build result
@@ -93,7 +93,7 @@ public class NotificationMojo extends AbstractMojo {
   /**
    * The Maven Session Object
    *
-   * @parameter property="${session}"
+   * @parameter property="session"
    * @required
    * @readonly
    */
@@ -102,7 +102,7 @@ public class NotificationMojo extends AbstractMojo {
     /**
      * Notification duration
      *
-     * @parameter property="${maven.notification.duration}" default-value=2000
+     * @parameter property="maven.notification.duration" default-value=2000
      */
     private Integer duration;
 
@@ -114,7 +114,7 @@ public class NotificationMojo extends AbstractMojo {
      *   <li>growl : use growlnotify (growl command line) notification
      * </ul>
      *
-     * @parameter property="${maven.notification.strategy}" default-value=swing
+     * @parameter property="maven.notification.strategy" default-value=swing
      */
     private String strategy;
 
