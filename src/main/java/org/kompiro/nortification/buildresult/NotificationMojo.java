@@ -36,7 +36,7 @@ import org.kompiro.nortification.ui.NotificationType;
 
 /**
  * Notify build result
- * 
+ *
  * @author <a href="kompiro@gmail.com">Hiroki Kondo</a>
  * @goal notify
  * @phase initialize
@@ -45,97 +45,97 @@ import org.kompiro.nortification.ui.NotificationType;
  */
 public class NotificationMojo extends AbstractMojo {
 
-	private final class NotifySessionEndedHandler implements
-			InvocationHandler {
-		private static final String METHOD_NAME_OF_SESSION_ENDED = "sessionEnded";
-		private final ExecutionListener defaultExecutionListener;
+  private final class NotifySessionEndedHandler implements
+      InvocationHandler {
+    private static final String METHOD_NAME_OF_SESSION_ENDED = "sessionEnded";
+    private final ExecutionListener defaultExecutionListener;
 
-		private NotifySessionEndedHandler(
-				ExecutionListener defaultExecutionListener) {
-			this.defaultExecutionListener = defaultExecutionListener;
-		}
+    private NotifySessionEndedHandler(
+        ExecutionListener defaultExecutionListener) {
+      this.defaultExecutionListener = defaultExecutionListener;
+    }
 
-		@Override
-		public Object invoke(Object target, Method method, Object[] args)
-				throws Throwable {
-			if(isExecutedSessionEnded(method)){
-				MavenProject project = session.getResult().getProject();
-				BuildSummary buildSummary = session.getResult()
-						.getBuildSummary(project);
-				if (buildSummary instanceof BuildSuccess) {
-					String title = "BUILD SUCCESS";
-					String message = String.format(
-							"Total Time : %ss", buildSummary.getTime());
-					showNotificationUI(title, message,NotificationType.SUCCESS);
-				} else if (buildSummary instanceof BuildFailure) {
-					BuildFailure failure = (BuildFailure) buildSummary;
-					String title = "BUILD FAILUERE!";
-					String message;
-					if(failure.getCause() != null){
-						message = String.format(
-								"Total Time : %ss\n%s", buildSummary.getTime(),
-								failure.getCause().getLocalizedMessage());
-					} else {
-						message = String.format(
-								"Total Time : %ss", buildSummary.getTime());
-					}
-					showNotificationUI(title, message,NotificationType.ERROR);
-				}
-			}
-			return method.invoke(defaultExecutionListener, args);
-		}
+    @Override
+    public Object invoke(Object target, Method method, Object[] args)
+        throws Throwable {
+      if(isExecutedSessionEnded(method)){
+        MavenProject project = session.getResult().getProject();
+        BuildSummary buildSummary = session.getResult()
+            .getBuildSummary(project);
+        if (buildSummary instanceof BuildSuccess) {
+          String title = "BUILD SUCCESS";
+          String message = String.format(
+              "Total Time : %ss", buildSummary.getTime());
+          showNotificationUI(title, message,NotificationType.SUCCESS);
+        } else if (buildSummary instanceof BuildFailure) {
+          BuildFailure failure = (BuildFailure) buildSummary;
+          String title = "BUILD FAILUERE!";
+          String message;
+          if(failure.getCause() != null){
+            message = String.format(
+                "Total Time : %ss\n%s", buildSummary.getTime(),
+                failure.getCause().getLocalizedMessage());
+          } else {
+            message = String.format(
+                "Total Time : %ss", buildSummary.getTime());
+          }
+          showNotificationUI(title, message,NotificationType.ERROR);
+        }
+      }
+      return method.invoke(defaultExecutionListener, args);
+    }
 
-		private boolean isExecutedSessionEnded(Method method) {
-			return method.getName().equals(METHOD_NAME_OF_SESSION_ENDED) ;
-		}
-	}
+    private boolean isExecutedSessionEnded(Method method) {
+      return method.getName().equals(METHOD_NAME_OF_SESSION_ENDED) ;
+    }
+  }
 
-	/**
-	 * The Maven Session Object
-	 * 
-	 * @parameter expression="${session}"
-	 * @required
-	 * @readonly
-	 */
-	protected MavenSession session;
-	
+  /**
+   * The Maven Session Object
+   *
+   * @parameter property="${session}"
+   * @required
+   * @readonly
+   */
+  protected MavenSession session;
+
     /**
      * Notification duration
      *
-     * @parameter expression="${maven.notification.duration}" default-value=2000
+     * @parameter property="${maven.notification.duration}" default-value=2000
      */
     private Integer duration;
-    
+
     /**
      * Notification strategy<br>
      * strategies:
      * <ul>
-     * 	<li>swing : simple notification window
-     * 	<li>growl : use growlnotify (growl command line) notification
+     *   <li>swing : simple notification window
+     *   <li>growl : use growlnotify (growl command line) notification
      * </ul>
      *
-     * @parameter expression="${maven.notification.strategy}" default-value=swing
+     * @parameter property="${maven.notification.strategy}" default-value=swing
      */
     private String strategy;
-    
 
-	public void execute() throws MojoExecutionException {
-		MavenExecutionRequest request = session.getRequest();
-		ExecutionListener defaultExecutionListener = request.getExecutionListener();
-		Object instance = Proxy.newProxyInstance(
-				this.getClass().getClassLoader(), 
-				new Class[]{ExecutionListener.class}, 
-				new NotifySessionEndedHandler(defaultExecutionListener));
-		request.setExecutionListener((ExecutionListener)instance);
-	}
 
-	private void showNotificationUI(final String title, final String message,final NotificationType type) {
-		NotificationStrategy notifyStrategy;
-		if(strategy.equals("growl")){
-			notifyStrategy = new GrowlNotificationStrategy(getLog(),title,message);
-		} else {
-			notifyStrategy = new SwingNotificationStrategy(getLog(),duration,title,message,type);			
-		}
-		notifyStrategy.show();
-	}
+  public void execute() throws MojoExecutionException {
+    MavenExecutionRequest request = session.getRequest();
+    ExecutionListener defaultExecutionListener = request.getExecutionListener();
+    Object instance = Proxy.newProxyInstance(
+        this.getClass().getClassLoader(),
+        new Class[]{ExecutionListener.class},
+        new NotifySessionEndedHandler(defaultExecutionListener));
+    request.setExecutionListener((ExecutionListener)instance);
+  }
+
+  private void showNotificationUI(final String title, final String message,final NotificationType type) {
+    NotificationStrategy notifyStrategy;
+    if(strategy.equals("growl")){
+      notifyStrategy = new GrowlNotificationStrategy(getLog(),title,message);
+    } else {
+      notifyStrategy = new SwingNotificationStrategy(getLog(),duration,title,message,type);
+    }
+    notifyStrategy.show();
+  }
 }
