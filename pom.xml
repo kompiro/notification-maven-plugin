@@ -73,7 +73,7 @@
       <plugin>
         <groupId>org.kompiro.notification</groupId>
         <artifactId>notification-maven-plugin</artifactId>
-        <version>0.8.1</version>
+        <version>0.8.2</version>
         <configuration>
           <duration>3000</duration>
           <strategy>growl</strategy>
@@ -153,7 +153,7 @@
     <dependency>
       <groupId>org.kompiro.notification</groupId>
       <artifactId>ui</artifactId>
-      <version>0.0.2</version>
+      <version>0.0.3</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
