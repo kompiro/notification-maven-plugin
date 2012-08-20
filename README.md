@@ -30,7 +30,7 @@ Add the plugin to pom.xml's <build>
         <plugin>
           <groupId>org.kompiro.notification</groupId>
           <artifactId>notification-maven-plugin</artifactId>
-          <version>0.8.2</version>
+          <version>0.8.3</version>
         </plugin>
         ...
       </plugins>
@@ -49,7 +49,7 @@ Add notification goal automatically -> add execution
         <plugin>
           <groupId>org.kompiro.notification</groupId>
           <artifactId>notification-maven-plugin</artifactId>
-          <version>0.8.2</version>
+          <version>0.8.3</version>
           <executions>
             <execution>
               <id>notification</id>
@@ -63,3 +63,26 @@ Add notification goal automatically -> add execution
         ...
       </plugins>
 
+If you'd like to use growl, set <configuration/>
+
+      <plugins>
+        ...
+        <plugin>
+          <groupId>org.kompiro.notification</groupId>
+          <artifactId>notification-maven-plugin</artifactId>
+          <version>0.8.3</version>
+          <configuration>
+            <strategy>growl</strategy>
+          </configuration>
+          <executions>
+            <execution>
+              <id>notification</id>
+              <phase>initialize</phase>
+              <goals>
+                <goal>notify</goal>
+              </goals>
+            </execution>
+          </executions>
+        </plugin>
+        ...
+      </plugins>
