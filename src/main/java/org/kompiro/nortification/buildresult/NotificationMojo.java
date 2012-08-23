@@ -37,6 +37,7 @@ import org.kompiro.nortification.buildresult.strategy.SwingNotificationStrategyP
  * @phase initialize
  * @requiresProject
  * @description notify build result to user.
+ * @executionStrategy once-per-session
  */
 public class NotificationMojo extends AbstractMojo {
 
@@ -67,7 +68,7 @@ public class NotificationMojo extends AbstractMojo {
 	 * @parameter property="maven.notification.strategy" default-value=swing
 	 */
 	private String strategy;
-	
+
 	/**
 	 * Stick notification information(only swing)<br>
 	 * 
@@ -75,14 +76,23 @@ public class NotificationMojo extends AbstractMojo {
 	 */
 	private boolean stick;
 
+	private static boolean initialized = false;
+
+	private static final Object lock = new Object();
+
 	public void execute() throws MojoExecutionException {
-		MavenExecutionRequest request = session.getRequest();
-		ExecutionListener defaultExecutionListener = request
-				.getExecutionListener();
-		Object instance = Proxy.newProxyInstance(this.getClass()
-				.getClassLoader(), new Class[] { ExecutionListener.class },
-				new NotifySessionEndedHandler(this, defaultExecutionListener));
-		request.setExecutionListener((ExecutionListener) instance);
+		synchronized (lock) {
+			if(initialized) return;
+			MavenExecutionRequest request = session.getRequest();
+			ExecutionListener executionListener = request.getExecutionListener();
+			NotifySessionEndedHandler notifySessionEndedHandler = new NotifySessionEndedHandler(
+					this, executionListener);
+			Object instance = Proxy.newProxyInstance(this.getClass()
+					.getClassLoader(), new Class[] { ExecutionListener.class },
+					notifySessionEndedHandler);
+			request.setExecutionListener((ExecutionListener) instance);
+			initialized = true;
+		}
 	}
 
 	void showNotificationUI(final String title, final String message,
@@ -92,8 +102,9 @@ public class NotificationMojo extends AbstractMojo {
 			notifyStrategy = new GrowlNotificationStrategy(getLog(), title,
 					message);
 		} else {
-			notifyStrategy = new SwingNotificationStrategy(getLog(), new SwingNotificationStrategyParameter(duration, title, message,
-					type, stick));
+			notifyStrategy = new SwingNotificationStrategy(getLog(),
+					new SwingNotificationStrategyParameter(duration, title,
+							message, type, stick));
 		}
 		notifyStrategy.show();
 	}
