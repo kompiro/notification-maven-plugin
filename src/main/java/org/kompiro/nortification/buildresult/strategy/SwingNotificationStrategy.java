@@ -42,7 +42,7 @@ public class SwingNotificationStrategy implements NotificationStrategy {
 				}
 			});
 		} catch (InterruptedException e) {
-			log.error(e);
+			log.warn(e);
 		} catch (InvocationTargetException e) {
 			log.error(e);
 		}
@@ -52,9 +52,10 @@ public class SwingNotificationStrategy implements NotificationStrategy {
 					this.wait();
 				}
 			} else {
-				Thread.sleep(parameter.getDuration());
+				Thread.sleep(parameter.getDuration() + 1200); // add reverse time
 			}
 		} catch (InterruptedException e) {
+			log.warn(e);
 		}
 	}
 
